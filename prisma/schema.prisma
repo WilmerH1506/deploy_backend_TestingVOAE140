@@ -1,0 +1,92 @@
+// Schema de Prisma solo para el servicio de importación de asistencias
+// El resto de la aplicación usa SQL normal con mysql2
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model degrees {
+  id         Int          @id @default(autoincrement())
+  code       String       @unique @db.VarChar(10)
+  name       String       @unique @db.VarChar(100)
+  faculty    String       @db.VarChar(100)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  users      users[]
+  activities activities[]
+}
+
+model users {
+  id             String          @id @db.Char(36)
+  name           String          @db.VarChar(100)
+  email          String          @unique @db.VarChar(100)
+  password       String          @db.VarChar(255)
+  accountNumber  BigInt?         @unique
+  identityNumber String?         @unique @db.VarChar(20)
+  role           String          @db.VarChar(20)
+  degreeId       Int             @default(1)
+  isDeleted      String          @default("false") @db.VarChar(5)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  degree         degrees         @relation(fields: [degreeId], references: [id])
+  registrations  registrations[]
+  attendances    attendances[]
+}
+
+model activities {
+  id             String              @id @db.Char(36)
+  title          String              @db.VarChar(100)
+  description    String?             @db.VarChar(500)
+  degreeId       Int
+  startDate      DateTime
+  endDate        DateTime?
+  voaeHours      Int
+  availableSpots Int
+  supervisorId   String              @db.Char(36)
+  status         String              @default("pending") @db.VarChar(20)
+  isDisabled     String              @default("false") @db.VarChar(5)
+  isDeleted      String              @default("false") @db.VarChar(5)
+  access         String              @default("all") @db.VarChar(20)
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  degree         degrees             @relation(fields: [degreeId], references: [id])
+  registrations  registrations[]
+  attendances    attendances[]
+}
+
+model registrations {
+  studentId        String        @db.Char(36)
+  activityId       String        @db.Char(36)
+  registrationDate DateTime      @default(now())
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  student          users         @relation(fields: [studentId], references: [id])
+  activity         activities    @relation(fields: [activityId], references: [id])
+  attendances      attendances[]
+
+  @@id([studentId, activityId])
+}
+
+model attendances {
+  id           String         @id @db.Char(36)
+  studentId    String         @db.Char(36)
+  activityId   String         @db.Char(36)
+  entryTime    DateTime
+  exitTime     DateTime?
+  observations String?        @db.Text
+  hoursAwarded Int?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  registration registrations  @relation(fields: [studentId, activityId], references: [studentId, activityId])
+  student      users          @relation(fields: [studentId], references: [id])
+  activity     activities     @relation(fields: [activityId], references: [id])
+
+  @@unique([studentId, activityId])
+}
+
+
