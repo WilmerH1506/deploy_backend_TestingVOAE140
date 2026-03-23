@@ -33,8 +33,8 @@ app.use(express.json())
 
 app.use(cors({
     methods:["GET","POST","PUT","DELETE","PATCH","OPTIONS"],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Bearer', 'api-key']
-
+    allowedHeaders: ['Content-Type', 'Authorization', 'Bearer', 'api-key'],
+    origin: "*"
 }))
 
 const start = Date.now()
