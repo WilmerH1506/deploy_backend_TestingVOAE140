@@ -34,19 +34,8 @@ app.use(express.json())
 app.use(cors({
     methods:["GET","POST","PUT","DELETE","PATCH","OPTIONS"],
     allowedHeaders: ['Content-Type', 'Authorization', 'Bearer', 'api-key'],
-    origin: "*"
+    origin: process.env.CORS_ORIGIN || 'localhost:4000' || 'localhost:3000'
 }))
-
-const start = Date.now()
-app.use((req, res, next) => {
-  res.on('finish', () => {
-    const duration = Date.now() - start
-    if (duration > 1000) {
-      console.log(` Tiempo de respuesta lenta: ${req.method} ${req.url} - ${duration}ms`)
-    }
-  })
-  next()
-});
 
 app.use('/api/activities',activitiesRouter)
 app.use("/api/auth",AuthRouter)
